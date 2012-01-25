@@ -6,7 +6,7 @@ require 'puppet/util'
 # in file-serving indirections.  This is necessary because
 # the terminus varies based on the URI asked for.
 module Puppet::FileServing::IndirectionHooks
-  PROTOCOL_MAP = {"puppet" => :rest, "file" => :file}
+  PROTOCOL_MAP = {"puppet" => :rest, "file" => :file, "depot" => :aria2}
 
   # Pick an appropriate terminus based on the protocol.
   def select_terminus(request)
@@ -19,6 +19,10 @@ module Puppet::FileServing::IndirectionHooks
     # We're heading over the wire the protocol is 'puppet' and we've got a server name or we're not named 'apply' or 'puppet'
     if request.protocol == "puppet" and (request.server or !["puppet","apply"].include?(Puppet.settings[:name]))
       return PROTOCOL_MAP["puppet"]
+    end
+    
+    if request.protocol == "depot" and (request.server or !["puppet","apply"].include?(Puppet.settings[:name]))
+      return PROTOCOL_MAP["depot"]
     end
 
     if request.protocol and PROTOCOL_MAP[request.protocol].nil?
